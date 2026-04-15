@@ -1,9 +1,178 @@
 "use client";
-import React from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Zap, Shield, BarChart3, ArrowRight } from "lucide-react";
+import { ethers } from "ethers";
+import { Sparkles, Zap, Shield, BarChart3, ArrowRight, Activity, RefreshCw, Play } from "lucide-react";
+
+const RPC_URL = "https://testrpc.xlayer.tech";
+const EXECUTOR_ADDRESS = "0xd23eE223683071Bd1F357a312e9d6159148e7BBe";
+const STRATEGY_ADDRESS = "0x54b8f113bfe164764d6bc3d0c9d966cd4fb83942";
+
+const EXECUTOR_ABI = [
+  "event AgentExecutionCompleted(uint256 totalCalls)",
+  "function executeByAgent(tuple(address target, bool allowFailure, bytes callData)[] calls) external payable returns (tuple(bool success, bytes returnData)[])",
+  "function agentWallet() view returns (address)"
+];
+
+const STRATEGY_ABI = [
+  "function executeEmergencySwap(address tokenIn, address tokenOut, uint256 amount, string reason) external",
+  "function agentOwner() view returns (address)",
+  "function authorizedExecutor() view returns (address)"
+];
+
+type DashboardState = {
+  chainId: bigint | null;
+  blockNumber: number | null;
+  agentWallet: string | null;
+  agentOwner: string | null;
+  authorizedExecutor: string | null;
+  latestTxHash: string | null;
+};
 
 export default function Home() {
+  const provider = useMemo(() => new ethers.JsonRpcProvider(RPC_URL), []);
+  const [dashboard, setDashboard] = useState<DashboardState>({
+    chainId: null,
+    blockNumber: null,
+    agentWallet: null,
+    agentOwner: null,
+    authorizedExecutor: null,
+    latestTxHash: null
+  });
+  const [query, setQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [isCheckingAgent, setIsCheckingAgent] = useState(false);
+  const [logs, setLogs] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [mockPrice, setMockPrice] = useState<number>(24.3);
+
+  const appendLog = useCallback((message: string) => {
+    const now = new Date().toLocaleTimeString();
+    setLogs((prev) => [`[${now}] ${message}`, ...prev].slice(0, 12));
+  }, []);
+
+  const short = (value: string | null) => (value ? `${value.slice(0, 6)}...${value.slice(-4)}` : "—");
+
+  const loadOnchainState = useCallback(async () => {
+    setError(null);
+    try {
+      const executor = new ethers.Contract(EXECUTOR_ADDRESS, EXECUTOR_ABI, provider);
+      const strategy = new ethers.Contract(STRATEGY_ADDRESS, STRATEGY_ABI, provider);
+
+      const [network, blockNumber, agentWallet, agentOwner, authorizedExecutor] = await Promise.all([
+        provider.getNetwork(),
+        provider.getBlockNumber(),
+        executor.agentWallet() as Promise<string>,
+        strategy.agentOwner() as Promise<string>,
+        strategy.authorizedExecutor() as Promise<string>
+      ]);
+
+      const fromBlock = Math.max(blockNumber - 50000, 0);
+      const eventTopic = ethers.id("AgentExecutionCompleted(uint256)");
+      const logsResult = await provider.getLogs({
+        address: EXECUTOR_ADDRESS,
+        topics: [eventTopic],
+        fromBlock,
+        toBlock: "latest"
+      });
+      const latestTxHash = logsResult.length > 0 ? logsResult[logsResult.length - 1].transactionHash : null;
+
+      setDashboard({
+        chainId: network.chainId,
+        blockNumber,
+        agentWallet,
+        agentOwner,
+        authorizedExecutor,
+        latestTxHash
+      });
+      appendLog("On-chain state refreshed from X Layer.");
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Failed to load on-chain data.";
+      setError(message);
+      appendLog(`On-chain fetch failed: ${message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [appendLog, provider]);
+
+  useEffect(() => {
+    void loadOnchainState();
+    const timer = setInterval(() => {
+      void loadOnchainState();
+    }, 15000);
+    return () => clearInterval(timer);
+  }, [loadOnchainState]);
+
+  const runAgentHealthCheck = async () => {
+    setIsCheckingAgent(true);
+    appendLog("Running agent E2E health check...");
+    try {
+      const response = await fetch("/api/agent/e2e", { method: "POST" });
+      const data = (await response.json()) as { ok: boolean; output?: string; error?: string };
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || "Agent check failed");
+      }
+      appendLog("Agent folder check passed.");
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Agent check failed";
+      appendLog(`Agent check error: ${message}`);
+    } finally {
+      setIsCheckingAgent(false);
+    }
+  };
+
+  const executeEmergencyWithWallet = async () => {
+    if (!window.ethereum) {
+      appendLog("MetaMask not found.");
+      return;
+    }
+    setIsExecuting(true);
+    setError(null);
+    try {
+      const browserProvider = new ethers.BrowserProvider(window.ethereum as ethers.Eip1193Provider);
+      const signer = await browserProvider.getSigner();
+      const signerAddress = await signer.getAddress();
+      appendLog(`Wallet connected: ${short(signerAddress)}`);
+
+      const strategyInterface = new ethers.Interface(STRATEGY_ABI);
+      const tokenIn = "0x1111111111111111111111111111111111111111";
+      const tokenOut = "0x2222222222222222222222222222222222222222";
+      const amount = ethers.parseEther("10");
+      const reason = "Manual UI trigger: emergency protection test";
+      const callData = strategyInterface.encodeFunctionData("executeEmergencySwap", [tokenIn, tokenOut, amount, reason]);
+
+      const executor = new ethers.Contract(EXECUTOR_ADDRESS, EXECUTOR_ABI, signer);
+      const tx = await (executor as ethers.Contract & {
+        executeByAgent: (
+          calls: Array<{ target: string; allowFailure: boolean; callData: string }>
+        ) => Promise<ethers.ContractTransactionResponse>;
+      }).executeByAgent([{ target: STRATEGY_ADDRESS, allowFailure: false, callData }]);
+
+      appendLog(`Transaction sent: ${tx.hash}`);
+      await tx.wait();
+      appendLog("On-chain protection executed successfully.");
+      setDashboard((prev) => ({ ...prev, latestTxHash: tx.hash }));
+      setMockPrice((prev) => Math.max(8.25, prev - 2));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Wallet execution failed";
+      setError(message);
+      appendLog(`Execution failed: ${message}`);
+    } finally {
+      setIsExecuting(false);
+    }
+  };
+
+  const simulateRadarStep = () => {
+    const next = Number((Math.random() * 100).toFixed(2));
+    setMockPrice(next);
+    if (next < 20) {
+      appendLog(`Danger detected at $${next}. Use Execute button to protect.`);
+    } else {
+      appendLog(`Market stable at $${next}.`);
+    }
+  };
+
   return (
     <div className="relative min-h-full flex flex-col items-center justify-center p-10">
       {/* Background Ambience */}
@@ -33,58 +202,128 @@ export default function Home() {
         </div>
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center z-10 space-y-4 mb-16"
       >
         <h1 className="text-6xl font-black tracking-tighter">
-          Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">Alex</span>
+          Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">Guardian</span>
         </h1>
         <p className="text-gray-500 font-bold max-w-lg mx-auto text-lg leading-relaxed">
-          Which onchain strategy do you want to analyze or execute today?
+          Real integration dashboard: wallet, agent checks, and X Layer on-chain status.
         </p>
       </motion.div>
 
       {/* Magic Search Bar */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-3xl magic-input-container p-2 mb-20 group"
       >
         <div className="flex items-center gap-4 px-4 py-4">
            <Zap className="text-yellow-400" size={24} />
-           <input 
-            type="text" 
-            placeholder="Tell us about your portfolio goals..." 
+           <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Type strategy note, then click arrow to simulate radar..."
             className="flex-1 bg-transparent border-none text-xl font-medium focus:outline-none placeholder:text-white/20 text-white"
            />
-           <button className="bg-yellow-400 hover:bg-yellow-500 text-black p-3 rounded-2xl transition-all shadow-[0_0_20px_rgba(251,191,36,0.2)] active:scale-95">
+           <button
+             onClick={simulateRadarStep}
+             className="bg-yellow-400 hover:bg-yellow-500 text-black p-3 rounded-2xl transition-all shadow-[0_0_20px_rgba(251,191,36,0.2)] active:scale-95"
+           >
              <ArrowRight size={24} />
            </button>
         </div>
       </motion.div>
 
+      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+        <button
+          onClick={() => void loadOnchainState()}
+          disabled={isLoading}
+          className="glass-panel px-4 py-3 text-sm font-bold flex items-center justify-center gap-2 hover:border-yellow-400/30"
+        >
+          <RefreshCw size={16} className={isLoading ? "animate-spin text-yellow-400" : "text-yellow-400"} />
+          Refresh On-Chain
+        </button>
+        <button
+          onClick={runAgentHealthCheck}
+          disabled={isCheckingAgent}
+          className="glass-panel px-4 py-3 text-sm font-bold flex items-center justify-center gap-2 hover:border-blue-400/30"
+        >
+          <Activity size={16} className="text-blue-400" />
+          {isCheckingAgent ? "Checking Agent..." : "Run Agent E2E Check"}
+        </button>
+        <button
+          onClick={executeEmergencyWithWallet}
+          disabled={isExecuting}
+          className="glass-panel px-4 py-3 text-sm font-bold flex items-center justify-center gap-2 hover:border-green-400/30"
+        >
+          <Play size={16} className="text-green-400" />
+          {isExecuting ? "Executing..." : "Execute Protection (Wallet)"}
+        </button>
+      </div>
+
       {/* Feature Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
-         <FeatureCard 
-          icon={<Shield className="text-orange-400" />} 
-          title="Safe Haven" 
-          desc="Automated protection for volatile market conditions on X Layer." 
+         <FeatureCard
+          icon={<Shield className="text-orange-400" />}
+          title="Agent Wallet"
+          desc={short(dashboard.agentWallet)}
           glow="glow-border-gold"
          />
-         <FeatureCard 
-          icon={<Zap className="text-blue-400" />} 
-          title="Rapid Swap" 
-          desc="Optimized multicall execution with minimal gas overhead." 
+         <FeatureCard
+          icon={<Zap className="text-blue-400" />}
+          title="Strategy Owner"
+          desc={short(dashboard.agentOwner)}
           glow="glow-border-blue"
          />
-         <FeatureCard 
-          icon={<BarChart3 className="text-green-400" />} 
-          title="Strategy Audit" 
-          desc="Deep analysis of real-time protocol yields and risk metrics." 
+         <FeatureCard
+          icon={<BarChart3 className="text-green-400" />}
+          title="Authorized Executor"
+          desc={short(dashboard.authorizedExecutor)}
           glow="glow-border-green"
          />
+      </div>
+
+      <div className="w-full max-w-5xl mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="glass-panel p-6">
+          <h3 className="text-lg font-black mb-3">Live X Layer Snapshot</h3>
+          <div className="space-y-2 text-sm text-gray-300">
+            <p>Chain ID: <span className="text-white font-mono">{dashboard.chainId?.toString() ?? "—"}</span></p>
+            <p>Block Number: <span className="text-white font-mono">{dashboard.blockNumber ?? "—"}</span></p>
+            <p>Current Simulated Price: <span className={`${mockPrice < 20 ? "text-red-400" : "text-emerald-400"} font-bold`}>${mockPrice.toFixed(2)}</span></p>
+            <p className="break-all">
+              Latest Tx:
+              {" "}
+              {dashboard.latestTxHash ? (
+                <a
+                  href={`https://www.oklink.com/xlayer-test/tx/${dashboard.latestTxHash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-yellow-400 hover:underline font-mono"
+                >
+                  {dashboard.latestTxHash}
+                </a>
+              ) : (
+                <span className="text-gray-500">No tx yet</span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="glass-panel p-6">
+          <h3 className="text-lg font-black mb-3">Live Execution Logs</h3>
+          <div className="space-y-2 text-xs font-mono text-gray-300 max-h-48 overflow-y-auto">
+            {error ? <p className="text-red-400">{error}</p> : null}
+            {logs.length === 0 ? <p className="text-gray-500">No logs yet. Click actions above.</p> : null}
+            {logs.map((line) => (
+              <p key={line} className="break-words">{line}</p>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
