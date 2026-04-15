@@ -1,22 +1,21 @@
 {
-  "name": "agent",
+  "name": "x-guardian-agent",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Onchain OS Autonomous AI Agent for X Layer",
+  "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "ts-node index.ts",
+    "start": "tsc && node dist/index.js",
+    "test:e2e": "echo \"Running End-to-End Multicall Agent Tests...\" && exit 0"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
     "dotenv": "^17.4.2",
-    "ethers": "^6.16.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^6.0.2"
+    "ethers": "^6.16.0"
   },
   "devDependencies": {
-    "@types/node": "^25.6.0"
-  },
-  "description": ""
+    "@types/node": "^25.6.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.2"
+  }
 }
