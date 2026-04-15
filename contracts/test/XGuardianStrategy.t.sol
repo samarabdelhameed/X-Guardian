@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Test.sol";
-import "../src/XGuardianStrategy.sol";
+import "../src/strategies/XGuardianStrategy.sol";
 
 contract XGuardianStrategyTest is Test {
     XGuardianStrategy public guardian;

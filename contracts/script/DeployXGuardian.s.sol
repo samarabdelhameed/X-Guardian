@@ -2,7 +2,7 @@
 pragma solidity ^0.8.19;
 
 import "forge-std/Script.sol";
-import "../src/XGuardianStrategy.sol";
+import "../src/strategies/XGuardianStrategy.sol";
 
 contract DeployXGuardian is Script {
     function run() external {
