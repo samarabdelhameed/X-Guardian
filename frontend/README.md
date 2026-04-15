@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# X-Guardian Frontend
 
-## Getting Started
+Modern Next.js 16 frontend for the X-Guardian DeFAI Portfolio Protector.
 
-First, run the development server:
+## 🎨 Pages
+
+### 1. **AI Advisor** (`/`)
+Main dashboard with:
+- Real-time X Layer blockchain data
+- Agent wallet status
+- Market monitoring simulation
+- Wallet connection
+- Execute protection button
+
+### 2. **Invest** (`/invest`) 🆕
+DeFi strategies marketplace:
+- 7 pre-configured strategies
+- Search and filter by risk
+- OneVault Bot chat integration
+- Direct investment flow
+
+### 3. **Strategies** (`/strategies`)
+Performance analytics:
+- Real-time APY charts
+- TVL data from DeFi protocols
+- Strategy comparison
+- Live on-chain data
+
+### 4. **Missions** (`/quests`)
+Gamification and rewards (placeholder)
+
+## 🧩 Components
+
+- `ChatWidget.tsx` - Floating AI assistant
+- `StrategyCard.tsx` - Investment strategy card 🆕
+- `InvestModal.tsx` - Transaction confirmation 🆕
+- `SuccessToast.tsx` - Success notifications 🆕
+- `StrategyModal.tsx` - Legacy modal (updated)
+
+## 🚀 Quick Start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔧 Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Next.js 16 (App Router)
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+- ethers.js v6
+- Lucide Icons
 
-## Learn More
+## 📱 Features
 
-To learn more about Next.js, take a look at the following resources:
+- Responsive design
+- Dark mode optimized
+- Wallet integration (MetaMask)
+- Real blockchain transactions
+- Smooth animations
+- Glass morphism UI
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎯 Design System
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Primary: Yellow (#fbbf24) to Orange (#f97316)
+- Background: Dark (#050505, #0a0a0a)
+- Glass panels: white/5 opacity
+- Rounded corners: 2xl, 3xl
+- Font: Inter
 
-## Deploy on Vercel
+## 📦 Scripts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm run dev      # Start development server
+pnpm run build    # Build for production
+pnpm run start    # Start production server
+pnpm run lint     # Run ESLint
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📄 License
+
+MIT

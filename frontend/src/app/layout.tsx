@@ -4,7 +4,7 @@ import "./globals.css";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, MessageSquare, Target, User, Search, Plus, MoreHorizontal } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Target, User, Search, Plus, MoreHorizontal, TrendingUp } from "lucide-react";
 import ChatWidget from "@/components/ChatWidget";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -90,6 +90,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
               <nav className="space-y-1">
                 <SideNavItem href="/" icon={<MessageSquare size={18} />} label="AI Advisor" active={pathname === "/"} />
+                <SideNavItem href="/invest" icon={<TrendingUp size={18} />} label="Invest" active={pathname === "/invest"} />
                 <SideNavItem href="/strategies" icon={<LayoutDashboard size={18} />} label="Strategies" active={pathname === "/strategies"} />
                 <SideNavItem href="/quests" icon={<Target size={18} />} label="Missions" active={pathname === "/quests"} />
               </nav>
