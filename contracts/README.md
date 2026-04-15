@@ -1,27 +1,45 @@
 # X-Guardian Smart Contracts 🛡️
 
-This directory contains the core smart contracts for the X-Guardian DeFAI project, deployed on **X Layer**.
+This directory contains the advanced smart contract architecture for **X-Guardian**, an autonomous DeFAI Portfolio Protector deployed on **X Layer**.
 
-## Deployment Information (X Layer Testnet)
+## Architecture Overview
 
-- **Contract Name:** `XGuardianStrategy`
-- **Contract Address:** `0xD68A56A8d2e37AB7513F0bF5e23d053AD1E892E9`
-- **Transaction Hash:** `0xd04bf5f5d1696fea114f28c75dd790b17ee1366306c13bfa2554498e381e882c`
+The system follows a modular "Strategy Engine" design, inspired by enterprise-grade DeFi protocols and optimized for **Onchain OS AI Agents**.
+
+- **Executor (`src/Executor.sol`)**: The central entry point. It inherits from `Multicall3` and provides a secure portal for the Onchain OS Agent to execute multiple actions in a single atomic transaction.
+- **Multicall3 (`src/Multicall3.sol`)**: A standard utility for batching transactions, allowing the AI Agent to perform approvals and swaps together to save gas and time.
+- **Strategies (`src/strategies/`)**: individual modular contracts containing specific risk-management logic. The core strategy is `XGuardianStrategy`.
+
+## Deployment Information (X Layer)
+
+- **Executor Address:** `0xd23eE223683071Bd1F357a312e9d6159148e7BBe`
+- **XGuardianStrategy Address:** `0xD68A56A8d2e37AB7513F0bF5e23d053AD1E892E9`
 - **Network:** X Layer Testnet
-- **RPC URL:** `https://testrpc.xlayer.tech`
+- **RPC URL:** `https://rpc.xlayer.tech`
 
-## Strategy Logic
-The `XGuardianStrategy` contract acts as an autonomous gateway. It is designed to be executed by an authorized AI Agent via Onchain OS to:
-1. Monitor asset risks.
-2. Execute emergency swaps (e.g., volatile tokens to stablecoins) when high risk is detected.
-3. Record all AI-driven interventions on-chain for transparency.
+## Security & Autonomy
 
-## How to Build
+- **Agentic Wallet Integration**: The `Executor` is protected by the `onlyAgent` modifier, ensuring that only the authorized **Onchain OS Agentic Wallet** can trigger portfolio-wide protective actions.
+- **Atomic Operations**: By using the `Executor`, our AI Agent can monitor, approve, and swap assets in one block, preventing front-running and ensuring the portfolio remains protected at all times.
+
+## Getting Started
+
+### Prerequisites
+- [Foundry](https://book.getfoundry.sh/getting-started/installation)
+
+### Build
 ```bash
 forge build
 ```
 
-## How to Test
+### Test
 ```bash
 forge test
+```
+
+### Deploy
+To deploy the Executor or new strategies:
+```bash
+source .env
+forge create --rpc-url $X_LAYER_RPC_URL --private-key $PRIVATE_KEY src/Executor.sol:Executor --broadcast
 ```
