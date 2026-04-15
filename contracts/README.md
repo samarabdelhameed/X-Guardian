@@ -1,66 +1,27 @@
-## Foundry
+# X-Guardian Smart Contracts 🛡️
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This directory contains the core smart contracts for the X-Guardian DeFAI project, deployed on **X Layer**.
 
-Foundry consists of:
+## Deployment Information (X Layer Testnet)
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+- **Contract Name:** `XGuardianStrategy`
+- **Contract Address:** `0xD68A56A8d2e37AB7513F0bF5e23d053AD1E892E9`
+- **Transaction Hash:** `0xd04bf5f5d1696fea114f28c75dd790b17ee1366306c13bfa2554498e381e882c`
+- **Network:** X Layer Testnet
+- **RPC URL:** `https://testrpc.xlayer.tech`
 
-## Documentation
+## Strategy Logic
+The `XGuardianStrategy` contract acts as an autonomous gateway. It is designed to be executed by an authorized AI Agent via Onchain OS to:
+1. Monitor asset risks.
+2. Execute emergency swaps (e.g., volatile tokens to stablecoins) when high risk is detected.
+3. Record all AI-driven interventions on-chain for transparency.
 
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
+## How to Build
+```bash
+forge build
 ```
 
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+## How to Test
+```bash
+forge test
 ```
