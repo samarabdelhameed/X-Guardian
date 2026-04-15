@@ -8,6 +8,8 @@
 
 **An AI-Powered Autonomous Agent for Real-Time Portfolio Protection on X Layer**
 
+**[Official GitHub Repository](https://github.com/samarabdelhameed/X-Guardian/tree/main)**
+
 **Professional Technical Documentation**
 
 </div>

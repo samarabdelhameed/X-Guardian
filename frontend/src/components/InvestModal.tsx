@@ -27,15 +27,29 @@ export default function InvestModal({
   const [isExecuting, setIsExecuting] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [executionStep, setExecutionStep] = useState<string>("");
 
   const handleConfirm = async () => {
     setIsExecuting(true);
     setError(null);
+    setExecutionStep("Checking network...");
+    
     try {
+      setExecutionStep("Validating contracts...");
+      await new Promise(resolve => setTimeout(resolve, 500)); // UX delay
+      
+      setExecutionStep("Preparing transaction...");
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setExecutionStep("Waiting for wallet confirmation...");
       const hash = await onConfirm();
+      
+      setExecutionStep("Transaction confirmed!");
       setTxHash(hash);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Transaction failed");
+      const errorMessage = e instanceof Error ? e.message : "Transaction failed";
+      setError(errorMessage);
+      setExecutionStep("");
     } finally {
       setIsExecuting(false);
     }
@@ -122,7 +136,7 @@ export default function InvestModal({
                     {isExecuting ? (
                       <>
                         <Loader2 size={16} className="animate-spin" />
-                        Processing...
+                        {executionStep || "Processing..."}
                       </>
                     ) : (
                       "Confirm Swap"
