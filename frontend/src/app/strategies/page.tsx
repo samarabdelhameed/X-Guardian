@@ -1,23 +1,74 @@
 "use client";
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, Shield, Activity, ArrowUpRight } from "lucide-react";
 
-interface Strategy {
+type Strategy = {
   name: string;
-  apy: string;
   risk: string;
   glow: string;
   color: string;
-}
+  apy: number | null;
+  tvlUsd: number | null;
+  chain: string | null;
+  project: string | null;
+  symbol: string | null;
+  poolId: string | null;
+};
 
-const STRATEGIES: Strategy[] = [
-  { name: "Morpho Guardian", apy: "4.2%", risk: "Low", glow: "glow-border-blue", color: "#3b82f6" },
-  { name: "DeFAI Aggregator", apy: "12.8%", risk: "High", glow: "glow-border-gold", color: "#fbbf24" },
-  { name: "X-Layer Vault", apy: "8.5%", risk: "Med", glow: "glow-border-green", color: "#22c55e" },
-];
+type ApiResponse = {
+  ok: boolean;
+  error?: string;
+  onchain?: {
+    chainId: string;
+    blockNumber: number;
+    agentWallet: string;
+    latestTxHash: string | null;
+  };
+  strategies?: Strategy[];
+  dataSources?: { yields: string; rpc: string };
+};
 
 export default function StrategiesPage() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<ApiResponse | null>(null);
+  const [range, setRange] = useState<"1W" | "1M" | "ALL">("1W");
+
+  const load = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/strategies", { cache: "no-store" });
+      const json = (await res.json()) as ApiResponse;
+      if (!res.ok || !json.ok) throw new Error(json.error || "Failed to load strategies");
+      setData(json);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load strategies");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const chartHeights = useMemo(() => {
+    // Use real APYs as inputs (still visually rich). If missing, fall back to a gentle wave.
+    const apys = (data?.strategies ?? []).map((s) => s.apy).filter((v): v is number => typeof v === "number");
+    const base = apys.length > 0 ? apys : [4, 7, 12];
+    const points = 30;
+    return Array.from({ length: points }, (_, i) => {
+      const anchor = base[i % base.length] ?? 6;
+      const wave = (Math.sin(i * 0.45) + 1) / 2; // 0..1
+      const scaled = Math.min(95, Math.max(10, anchor * 3 + wave * 55));
+      return `${scaled}%`;
+    });
+  }, [data?.strategies]);
+
+  const strategies = data?.strategies ?? [];
+
   return (
     <div className="p-10 space-y-12">
       <div className="flex justify-between items-end">
@@ -28,8 +79,10 @@ export default function StrategiesPage() {
         <div className="flex gap-4">
            <div className="glass-panel px-6 py-3 border-white/5 flex items-center gap-4">
               <div>
-                <span className="text-[10px] text-gray-500 block uppercase font-bold">Total Protected</span>
-                <span className="text-xl font-black">$4,260,112</span>
+                <span className="text-[10px] text-gray-500 block uppercase font-bold">Latest On-chain Execution</span>
+                <span className="text-xs font-mono font-black break-all">
+                  {loading ? "Loading..." : data?.onchain?.latestTxHash ?? "No recent tx"}
+                </span>
               </div>
               <Shield className="text-blue-400" size={24} />
            </div>
@@ -49,20 +102,27 @@ export default function StrategiesPage() {
               Aggregated Performance
             </h4>
             <div className="flex bg-white/5 rounded-xl p-1 gap-1 text-[10px] font-bold">
-               <button className="px-3 py-1.5 bg-yellow-400 text-black rounded-lg">1W</button>
-               <button className="px-3 py-1.5 hover:text-white transition-colors">1M</button>
-               <button className="px-3 py-1.5 hover:text-white transition-colors">ALL</button>
+               <button onClick={() => setRange("1W")} className={`px-3 py-1.5 rounded-lg ${range === "1W" ? "bg-yellow-400 text-black" : "hover:text-white transition-colors"}`}>1W</button>
+               <button onClick={() => setRange("1M")} className={`px-3 py-1.5 rounded-lg ${range === "1M" ? "bg-yellow-400 text-black" : "hover:text-white transition-colors"}`}>1M</button>
+               <button onClick={() => setRange("ALL")} className={`px-3 py-1.5 rounded-lg ${range === "ALL" ? "bg-yellow-400 text-black" : "hover:text-white transition-colors"}`}>ALL</button>
             </div>
           </div>
           
-          {/* Animated SVG Chart Mockup */}
+          {error ? (
+            <div className="text-red-400 text-sm font-bold">{error}</div>
+          ) : null}
+          <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-4">
+            Data sources: {data?.dataSources?.yields ?? "—"} + X Layer RPC ({data?.dataSources?.rpc ?? "—"})
+          </div>
+
+          {/* Performance Bars (APY-driven, real inputs) */}
           <div className="flex-1 relative flex items-end gap-1 px-4">
-             {[...Array(30)].map((_, i) => (
+             {chartHeights.map((h, i) => (
                <motion.div 
                 key={i}
                 initial={{ height: 0 }}
-                animate={{ height: `${((Math.sin(i * 0.5) + 1) / 2) * 60 + 30}%` }}
-                transition={{ duration: 1.5, delay: i * 0.03, repeat: Infinity, repeatType: "reverse", repeatDelay: 5 }}
+                animate={{ height: h }}
+                transition={{ duration: 0.8, delay: i * 0.01 }}
                 className="flex-1 bg-gradient-to-t from-yellow-400/5 to-yellow-400/40 rounded-t-sm border-t border-yellow-400/20"
                />
              ))}
@@ -73,7 +133,7 @@ export default function StrategiesPage() {
         </motion.div>
 
         <div className="space-y-6">
-           {STRATEGIES.map((s, i) => (
+           {strategies.map((s, i) => (
              <motion.div 
                key={i}
                initial={{ opacity: 0, x: 20 }}
@@ -88,18 +148,27 @@ export default function StrategiesPage() {
                    <ArrowUpRight className="text-gray-500 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" size={18} />
                 </div>
                 <h3 className="font-black text-lg mb-1">{s.name}</h3>
+                <div className="text-[10px] text-gray-500 font-bold">
+                  {s.project ? `${s.project} • ${s.chain ?? "—"} • ${s.symbol ?? "—"}` : "Loading data..."}
+                </div>
                 <div className="flex justify-between items-center mt-4">
                    <div className="flex flex-col">
                       <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Projected APY</span>
-                      <span className="text-sm font-black text-white">{s.apy}</span>
+                      <span className="text-sm font-black text-white">{typeof s.apy === "number" ? `${s.apy.toFixed(2)}%` : "—"}</span>
                    </div>
                    <span className="text-[9px] px-3 py-1 rounded-full bg-white/5 border border-white/5 font-black uppercase tracking-tighter text-gray-400">{s.risk} Risk</span>
+                </div>
+                <div className="mt-4 text-[10px] text-gray-500 font-bold">
+                  TVL: {typeof s.tvlUsd === "number" ? `$${Math.round(s.tvlUsd).toLocaleString()}` : "—"}
                 </div>
              </motion.div>
            ))}
            
-           <button className="w-full py-4 bg-white/5 border border-white/5 rounded-[1.5rem] font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all">
-             View All Strategies
+           <button
+             onClick={() => void load()}
+             className="w-full py-4 bg-white/5 border border-white/5 rounded-[1.5rem] font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all"
+           >
+             {loading ? "Refreshing..." : "Refresh Live Data"}
            </button>
         </div>
       </div>

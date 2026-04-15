@@ -204,7 +204,29 @@ export default function Home() {
       setDashboard((prev) => ({ ...prev, latestTxHash: tx.hash }));
       setMockPrice((prev) => Math.max(8.25, prev - 2));
     } catch (e) {
-      const message = e instanceof Error ? e.message : "Wallet execution failed";
+      const anyErr = e as
+        | (Error & {
+            shortMessage?: string;
+            info?: { error?: { message?: string } };
+            cause?: unknown;
+          })
+        | unknown;
+
+      const message =
+        (typeof anyErr === "object" && anyErr && "shortMessage" in anyErr && typeof (anyErr as { shortMessage?: unknown }).shortMessage === "string"
+          ? (anyErr as { shortMessage: string }).shortMessage
+          : null) ??
+        (typeof anyErr === "object" && anyErr && "message" in anyErr && typeof (anyErr as { message?: unknown }).message === "string"
+          ? (anyErr as { message: string }).message
+          : null) ??
+        (typeof anyErr === "object" &&
+        anyErr &&
+        "info" in anyErr &&
+        typeof (anyErr as { info?: { error?: { message?: unknown } } }).info?.error?.message === "string"
+          ? (anyErr as { info: { error: { message: string } } }).info.error.message
+          : null) ??
+        "Wallet execution failed";
+
       setError(message);
       appendLog(`Execution failed: ${message}`);
     } finally {
@@ -220,6 +242,37 @@ export default function Home() {
     } else {
       appendLog(`Market stable at $${next}.`);
     }
+  };
+
+  const handleSearch = async () => {
+    const q = query.trim().toLowerCase();
+    if (!q) {
+      simulateRadarStep();
+      return;
+    }
+
+    // Real actions (not simulated)
+    if (q.includes("onchain") || q.includes("on-chain") || q.includes("status") || q.includes("latest tx")) {
+      appendLog("Command recognized: Refresh on-chain state");
+      await loadOnchainState();
+      return;
+    }
+
+    if (q.includes("agent") && (q.includes("e2e") || q.includes("check") || q.includes("health"))) {
+      appendLog("Command recognized: Run agent E2E check");
+      await runAgentHealthCheck();
+      return;
+    }
+
+    if (q.includes("execute") || q.includes("protect") || q.includes("emergency")) {
+      appendLog("Command recognized: Execute protection (wallet)");
+      await executeEmergencyWithWallet();
+      return;
+    }
+
+    // Default: keep the demo radar behavior
+    appendLog("AI analysis (demo): simulating market radar step");
+    simulateRadarStep();
   };
 
   return (
@@ -280,7 +333,7 @@ export default function Home() {
             className="flex-1 bg-transparent border-none text-xl font-medium focus:outline-none placeholder:text-white/20 text-white"
            />
            <button
-             onClick={simulateRadarStep}
+             onClick={() => void handleSearch()}
              className="bg-yellow-400 hover:bg-yellow-500 text-black p-3 rounded-2xl transition-all shadow-[0_0_20px_rgba(251,191,36,0.2)] active:scale-95"
            >
              <ArrowRight size={24} />
