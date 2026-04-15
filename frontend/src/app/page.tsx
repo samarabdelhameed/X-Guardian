@@ -1,65 +1,67 @@
-import Image from "next/image";
+import React from 'react';
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-gray-950 text-white p-8 font-sans selection:bg-emerald-500 selection:text-white">
+      <div className="max-w-6xl mx-auto">
+        <header className="flex justify-between items-center border-b border-gray-800 pb-6 mb-10">
+          <div>
+            <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400">
+              X-Guardian
+            </h1>
+            <p className="text-gray-400 mt-2 text-sm">Autonomous DeFAI Portfolio Protector on X Layer</p>
+          </div>
+          <button className="bg-white text-black hover:bg-gray-200 px-6 py-2.5 rounded-full font-bold transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+            Connect Wallet
+          </button>
+        </header>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Portfolio Section */}
+          <div className="bg-gray-900 p-8 rounded-3xl border border-gray-800 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              💼 Portfolio Status
+            </h2>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-5 bg-gray-800/50 rounded-2xl border border-gray-700/50">
+                <div>
+                  <p className="font-bold text-lg">TARGET_TOKEN</p>
+                  <p className="text-xs text-gray-400">Monitored Asset</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-red-400 font-bold bg-red-400/10 px-3 py-1 rounded-full text-sm">Risk Detected 📉</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center p-5 bg-gray-800/50 rounded-2xl border border-gray-700/50">
+                <div>
+                  <p className="font-bold text-lg">USDC</p>
+                  <p className="text-xs text-gray-400">Safe Haven Asset</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-emerald-400 font-bold bg-emerald-400/10 px-3 py-1 rounded-full text-sm">+ Protected 🛡️</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Agent Logs Section */}
+          <div className="bg-gray-900 p-8 rounded-3xl border border-gray-800 shadow-2xl">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              🧠 Onchain OS Agent Logs
+            </h2>
+            <div className="font-mono text-sm bg-black/80 p-5 rounded-2xl h-64 overflow-y-auto border border-gray-800 shadow-inner space-y-3">
+              <p className="text-gray-500">[{new Date().toLocaleTimeString()}] System Initialized...</p>
+              <p className="text-blue-400">&gt; 🚀 [X-Guardian] AI Agent activated and monitoring portfolio...</p>
+              <p className="text-gray-400">&gt; 📊 Scanning liquidity and real-time market data...</p>
+              <p className="text-yellow-400">&gt; ⚠️ [ALERT] Danger detected! Initiating emergency protocol...</p>
+              <p className="text-purple-400">&gt; ⚙️ Executing Smart Contract Protection on X Layer...</p>
+              <p className="text-emerald-400 font-bold">&gt; 🛡️ [SUCCESS] Portfolio protected successfully onchain!</p>
+              <p className="text-gray-500 break-all">&gt; Tx Hash: 0xe93805263740e0ac44c230322b1d7727f0d91178bea194cc41d5e12a521cd34d</p>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
