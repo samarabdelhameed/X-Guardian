@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { TrendingUp, Shield, Activity, ArrowUpRight } from "lucide-react";
 
@@ -25,8 +25,15 @@ type ApiResponse = {
     agentWallet: string;
     latestTxHash: string | null;
   };
+  chart?: {
+    label: string;
+    poolId: string | null;
+    range: string;
+    series: Array<{ ts: string; apy: number; tvlUsd: number }>;
+  };
   strategies?: Strategy[];
   dataSources?: { yields: string; rpc: string };
+  latencyMs?: number;
 };
 
 export default function StrategiesPage() {
@@ -35,11 +42,11 @@ export default function StrategiesPage() {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [range, setRange] = useState<"1W" | "1M" | "ALL">("1W");
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/strategies", { cache: "no-store" });
+      const res = await fetch(`/api/strategies?range=${range}`, { cache: "no-store" });
       const json = (await res.json()) as ApiResponse;
       if (!res.ok || !json.ok) throw new Error(json.error || "Failed to load strategies");
       setData(json);
@@ -48,24 +55,26 @@ export default function StrategiesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [range]);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
-  const chartHeights = useMemo(() => {
-    // Use real APYs as inputs (still visually rich). If missing, fall back to a gentle wave.
-    const apys = (data?.strategies ?? []).map((s) => s.apy).filter((v): v is number => typeof v === "number");
-    const base = apys.length > 0 ? apys : [4, 7, 12];
-    const points = 30;
-    return Array.from({ length: points }, (_, i) => {
-      const anchor = base[i % base.length] ?? 6;
-      const wave = (Math.sin(i * 0.45) + 1) / 2; // 0..1
-      const scaled = Math.min(95, Math.max(10, anchor * 3 + wave * 55));
-      return `${scaled}%`;
+  const chartBars = useMemo(() => {
+    const series = data?.chart?.series ?? [];
+    if (series.length === 0) return [];
+    // Use APY series; scale to 10..95% for visualization.
+    const apys = series.map((p) => p.apy);
+    const min = Math.min(...apys);
+    const max = Math.max(...apys);
+    const denom = max - min || 1;
+    return series.map((p) => {
+      const norm = (p.apy - min) / denom;
+      const height = 10 + norm * 85;
+      return { height: `${height}%`, ts: p.ts, apy: p.apy, tvlUsd: p.tvlUsd };
     });
-  }, [data?.strategies]);
+  }, [data?.chart?.series]);
 
   const strategies = data?.strategies ?? [];
 
@@ -111,24 +120,31 @@ export default function StrategiesPage() {
           {error ? (
             <div className="text-red-400 text-sm font-bold">{error}</div>
           ) : null}
-          <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-4">
-            Data sources: {data?.dataSources?.yields ?? "—"} + X Layer RPC ({data?.dataSources?.rpc ?? "—"})
+          <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-4 flex flex-wrap gap-x-2 gap-y-1">
+            <span>Data sources: {data?.dataSources?.yields ?? "—"} + X Layer RPC</span>
+            <span className="text-gray-600">|</span>
+            <span>Chart pool: {data?.chart?.label ?? "—"}</span>
+            <span className="text-gray-600">|</span>
+            <span>API latency: {typeof data?.latencyMs === "number" ? `${data.latencyMs}ms` : "—"}</span>
           </div>
 
-          {/* Performance Bars (APY-driven, real inputs) */}
+          {/* Performance Bars (real APY time-series) */}
           <div className="flex-1 relative flex items-end gap-1 px-4">
-             {chartHeights.map((h, i) => (
+             {chartBars.length === 0 ? (
+               <div className="text-gray-500 text-sm font-bold">Loading chart data...</div>
+             ) : chartBars.map((b, i) => (
                <motion.div 
                 key={i}
                 initial={{ height: 0 }}
-                animate={{ height: h }}
-                transition={{ duration: 0.8, delay: i * 0.01 }}
-                className="flex-1 bg-gradient-to-t from-yellow-400/5 to-yellow-400/40 rounded-t-sm border-t border-yellow-400/20"
+                animate={{ height: b.height }}
+                transition={{ duration: 0.6, delay: i * 0.01 }}
+                title={`${new Date(b.ts).toLocaleDateString()} • APY ${b.apy.toFixed(2)}% • TVL $${Math.round(b.tvlUsd).toLocaleString()}`}
+                className="flex-1 bg-linear-to-t from-yellow-400/5 to-yellow-400/40 rounded-t-sm border-t border-yellow-400/20"
                />
              ))}
              
              {/* Overlay Gradient */}
-             <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent h-12 bottom-0"></div>
+             <div className="absolute inset-0 bg-linear-to-t from-[#050505] via-transparent to-transparent h-12 bottom-0"></div>
           </div>
         </motion.div>
 
@@ -166,7 +182,7 @@ export default function StrategiesPage() {
            
            <button
              onClick={() => void load()}
-             className="w-full py-4 bg-white/5 border border-white/5 rounded-[1.5rem] font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all"
+             className="w-full py-4 bg-white/5 border border-white/5 rounded-3xl font-bold text-xs uppercase tracking-widest hover:bg-white/10 transition-all"
            >
              {loading ? "Refreshing..." : "Refresh Live Data"}
            </button>
