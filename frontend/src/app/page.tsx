@@ -7,6 +7,7 @@ import { Sparkles, Zap, Shield, BarChart3, ArrowRight, Activity, RefreshCw, Play
 const RPC_URL = "https://testrpc.xlayer.tech";
 const EXECUTOR_ADDRESS = "0xd23eE223683071Bd1F357a312e9d6159148e7BBe";
 const STRATEGY_ADDRESS = "0x54b8f113bfe164764d6bc3d0c9d966cd4fb83942";
+const X_LAYER_TESTNET_CHAIN_ID_HEX = "0x7a0";
 
 const EXECUTOR_ABI = [
   "event AgentExecutionCompleted(uint256 totalCalls)",
@@ -68,15 +69,25 @@ export default function Home() {
         strategy.authorizedExecutor() as Promise<string>
       ]);
 
-      const fromBlock = Math.max(blockNumber - 50000, 0);
       const eventTopic = ethers.id("AgentExecutionCompleted(uint256)");
-      const logsResult = await provider.getLogs({
-        address: EXECUTOR_ADDRESS,
-        topics: [eventTopic],
-        fromBlock,
-        toBlock: "latest"
-      });
-      const latestTxHash = logsResult.length > 0 ? logsResult[logsResult.length - 1].transactionHash : null;
+      // X Layer RPC limits getLogs ranges; scan backward in 100-block windows.
+      let latestTxHash: string | null = null;
+      let cursorTo = blockNumber;
+      for (let i = 0; i < 20; i += 1) {
+        const fromBlock = Math.max(cursorTo - 99, 0);
+        const logsResult = await provider.getLogs({
+          address: EXECUTOR_ADDRESS,
+          topics: [eventTopic],
+          fromBlock,
+          toBlock: cursorTo
+        });
+        if (logsResult.length > 0) {
+          latestTxHash = logsResult[logsResult.length - 1].transactionHash;
+          break;
+        }
+        if (fromBlock === 0) break;
+        cursorTo = fromBlock - 1;
+      }
 
       setDashboard({
         chainId: network.chainId,
@@ -130,7 +141,45 @@ export default function Home() {
     setIsExecuting(true);
     setError(null);
     try {
-      const browserProvider = new ethers.BrowserProvider(window.ethereum as ethers.Eip1193Provider);
+      const ethProvider = window.ethereum as ethers.Eip1193Provider & {
+        request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
+      };
+
+      // Ensure signer is on X Layer Testnet before sending tx.
+      const currentChainId = (await ethProvider.request({ method: "eth_chainId" })) as string;
+      if (currentChainId.toLowerCase() !== X_LAYER_TESTNET_CHAIN_ID_HEX) {
+        appendLog(`Switching wallet network from ${currentChainId} to ${X_LAYER_TESTNET_CHAIN_ID_HEX}...`);
+        try {
+          await ethProvider.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: X_LAYER_TESTNET_CHAIN_ID_HEX }]
+          });
+        } catch (switchError) {
+          const code = (switchError as { code?: number }).code;
+          if (code === 4902) {
+            await ethProvider.request({
+              method: "wallet_addEthereumChain",
+              params: [
+                {
+                  chainId: X_LAYER_TESTNET_CHAIN_ID_HEX,
+                  chainName: "X Layer Testnet",
+                  rpcUrls: [RPC_URL],
+                  nativeCurrency: {
+                    name: "OKB",
+                    symbol: "OKB",
+                    decimals: 18
+                  },
+                  blockExplorerUrls: ["https://www.oklink.com/xlayer-test"]
+                }
+              ]
+            });
+          } else {
+            throw switchError;
+          }
+        }
+      }
+
+      const browserProvider = new ethers.BrowserProvider(ethProvider);
       const signer = await browserProvider.getSigner();
       const signerAddress = await signer.getAddress();
       appendLog(`Wallet connected: ${short(signerAddress)}`);
@@ -323,6 +372,30 @@ export default function Home() {
               <p key={line} className="break-words">{line}</p>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div className="w-full max-w-5xl mt-8 glass-panel p-6">
+        <h3 className="text-lg font-black mb-4">How it works</h3>
+        <div className="space-y-3 text-sm text-gray-300 leading-relaxed">
+          <p>
+            1) Select your preferred DeFi strategy (Low, Medium, or High risk), or let the AI guide you.
+            It&apos;s simple to use.
+          </p>
+          <p>
+            2) Ask any questions related to these DeFi strategies. Get the latest information and receive
+            real-time responses.
+          </p>
+          <p>
+            3) Sign once. Our DeFAI system takes care of the execution.
+          </p>
+          <p>
+            4) Track and optimize - The AI continuously adjusts strategies based on market conditions.
+          </p>
+          <p className="pt-2 text-gray-200">
+            Built for both power users and DeFi newcomers, this is the next-generation way to deploy
+            capital-smart, automated, and effortless.
+          </p>
         </div>
       </div>
     </div>
