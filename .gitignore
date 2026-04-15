@@ -1,0 +1,16 @@
+# Environments
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Node modules
+node_modules/
+
+# Mac OS
+.DS_Store
+
+# Foundry
+broadcast/
+cache/
+out/
