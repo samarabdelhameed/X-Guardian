@@ -1,13 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-/**
- * @title XGuardianStrategy
- * @dev Autonomous DeFi strategy contract executed by AI Agents on X Layer.
- * Inspired by DynaVest's DeFAI architecture.
- */
 contract XGuardianStrategy {
     address public agentOwner;
+    address public authorizedExecutor;
 
     // حدث يتم تسجيله على البلوكتشين عندما يقرر الذكاء الاصطناعي التدخل
     event EmergencyProtectionExecuted(
@@ -17,14 +13,19 @@ contract XGuardianStrategy {
         string reason
     );
 
-    // التأكد من أن وكيل الذكاء الاصطناعي الخاص بك فقط هو من يمكنه التنفيذ
-    modifier onlyAgent() {
-        require(msg.sender == agentOwner, "X-Guardian: Caller is not the authorized AI Agent");
+    // تعديل الصلاحيات لتسمح لمالك العقد أو للمحرك المجمع (Executor) بالتنفيذ
+    modifier onlyAuthorized() {
+        require(
+            msg.sender == agentOwner || msg.sender == authorizedExecutor,
+            "X-Guardian: Caller is not authorized"
+        );
         _;
     }
 
-    constructor() {
-        agentOwner = msg.sender; // الحساب الذي سينشر العقد سيكون هو الوكيل المعتمد
+    // تمرير عنوان الـ Executor أثناء النشر
+    constructor(address _executor) {
+        agentOwner = msg.sender;
+        authorizedExecutor = _executor;
     }
 
     /**
@@ -39,7 +40,7 @@ contract XGuardianStrategy {
         address tokenOut, 
         uint256 amount,
         string memory reason
-    ) external onlyAgent {
+    ) external onlyAuthorized {
         // في هذه المرحلة نقوم بمحاكاة منطق Uniswap / Onchain OS
         // سيقوم الوكيل بالمناداة على هذه الدالة عندما يستشعر الخطر
         

@@ -13,9 +13,11 @@ The system follows a modular "Strategy Engine" design, inspired by enterprise-gr
 ## Deployment Information (X Layer)
 
 - **Executor Address:** `0xd23eE223683071Bd1F357a312e9d6159148e7BBe`
-- **XGuardianStrategy Address:** `0xD68A56A8d2e37AB7513F0bF5e23d053AD1E892E9`
+- **XGuardianStrategy Address (Latest):** `0x54b8f113bfe164764d6bc3d0c9d966cd4fb83942`
+- **Strategy Deploy Tx Hash:** `0x1fd429cf3679894f526b2e40f6cb221906b9b273bbaaa148dc4e269e06abdd59`
+- **Agent Multicall Success Tx Hash:** `0x27c828b8f7359afa055e973f83b979a1ebb04cfc32ef185e4e21476f3c692994`
 - **Network:** X Layer Testnet
-- **RPC URL:** `https://rpc.xlayer.tech`
+- **RPC URL:** `https://testrpc.xlayer.tech`
 
 ## Security & Autonomy
 
