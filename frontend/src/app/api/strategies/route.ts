@@ -64,9 +64,14 @@ async function getChartCached(poolId: string): Promise<PoolChartPoint[]> {
   const ttlMs = 60_000;
   const cached = CACHE.chartByPool.get(poolId);
   if (cached && nowMs() - cached.atMs < ttlMs) return cached.data;
-  const points = await fetchJson<PoolChartPoint[]>(`https://api.llama.fi/chart/${poolId}`);
-  CACHE.chartByPool.set(poolId, { atMs: nowMs(), data: points ?? [] });
-  return points ?? [];
+  
+  // Corrected endpoint: use yields.llama.fi for pool-specific historical APY data
+  const url = `https://yields.llama.fi/chart/${poolId}`;
+  const { data } = await fetchJson<{ data: PoolChartPoint[] }>(url);
+  const points = data ?? [];
+  
+  CACHE.chartByPool.set(poolId, { atMs: nowMs(), data: points });
+  return points;
 }
 
 function pickPool(pools: LlamaPool[], predicate: (p: LlamaPool) => boolean): LlamaPool | null {
