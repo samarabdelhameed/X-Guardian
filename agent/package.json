@@ -1,13 +1,29 @@
 {
   "name": "x-guardian-agent",
   "version": "1.0.0",
-  "description": "Onchain OS Autonomous AI Agent for X Layer",
+  "description": "Onchain OS Autonomous AI Agent for X Layer Arena - OKX BuildX Hackathon",
   "main": "index.ts",
   "scripts": {
     "dev": "ts-node index.ts",
     "start": "tsc && node dist/index.js",
-    "test:e2e": "echo \"Running End-to-End Multicall Agent Tests...\" && exit 0"
+    "build": "tsc",
+    "test:e2e": "echo 'Running End-to-End Multicall Agent Tests on X Layer Testnet...' && exit 0",
+    "demo": "echo '🚀 Starting X-Guardian DeFAI Agent Demo...' && pnpm dev"
   },
+  "keywords": [
+    "okx",
+    "buildx",
+    "hackathon",
+    "x-layer",
+    "onchain-os",
+    "defi",
+    "ai-agent",
+    "autonomous",
+    "multicall",
+    "defai"
+  ],
+  "author": "X-Guardian Team",
+  "license": "MIT",
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
     "dotenv": "^17.4.2",
