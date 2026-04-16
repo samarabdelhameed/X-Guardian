@@ -36,13 +36,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       }
     };
 
-    void window.ethereum
-      .request({ method: "eth_accounts" })
-      .then(handleAccountsChanged)
-      .catch(() => {
-        setWalletAddress(null);
-      });
-
     window.ethereum.on?.("accountsChanged", handleAccountsChanged);
     return () => {
       window.ethereum?.removeListener?.("accountsChanged", handleAccountsChanged);
@@ -66,6 +59,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     } finally {
       setIsConnecting(false);
     }
+  };
+
+  const disconnectWallet = () => {
+    setWalletAddress(null);
+    setWalletError(null);
   };
 
   const shortAddress = walletAddress
@@ -132,13 +130,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Status</span>
                   <span className="text-xs font-mono font-bold text-blue-400">ACTIVE_X_LAYER</span>
                 </div>
-                <button
-                  onClick={connectWallet}
-                  disabled={isConnecting}
-                  className="px-4 h-10 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-black tracking-wide disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {isConnecting ? "Connecting..." : shortAddress ?? "Connect Wallet"}
-                </button>
+                {walletAddress ? (
+                  <button
+                    onClick={disconnectWallet}
+                    className="px-4 h-10 rounded-xl border border-white/10 bg-white/5 text-gray-300 text-xs font-bold hover:bg-white/10 hover:text-white transition-all"
+                  >
+                    Disconnect {shortAddress}
+                  </button>
+                ) : (
+                  <button
+                    onClick={connectWallet}
+                    disabled={isConnecting}
+                    className="px-4 h-10 rounded-xl bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-black tracking-wide disabled:opacity-70 disabled:cursor-not-allowed shadow-[0_4px_15px_rgba(251,191,36,0.2)]"
+                  >
+                    {isConnecting ? "Connecting..." : "Connect Wallet"}
+                  </button>
+                )}
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 border border-white/10 flex items-center justify-center shadow-[0_0_20px_rgba(251,191,36,0.2)]">
                   <User className="text-black" size={20} />
                 </div>

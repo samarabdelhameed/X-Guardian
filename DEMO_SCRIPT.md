@@ -40,6 +40,10 @@ Demonstrate the seamless integration of AI autonomy and X Layer blockchain execu
   - *Action*: Click the yellow Tx hash to show it links to OKLink Explorer.
   - *Script*: "Success! The transaction is mined. My portfolio is shielded. The AI reasoning engine logs the result, and my 'Missions' progress increases."
 
+- **Step 10: Strategy Selection (Optional Preview)**: Click 'Invest' in the sidebar.
+  - *Action*: Briefly show the Invest grid with Morpho/AAVE cards.
+  - *Script*: "Before we wrap up, notice the Invest module. This is X-Guardian's research hub, where we track live APY across protocols like Morpho and AAVE. It identifies the highest-yield, lowest-risk opportunities on X Layer, feeding data directly into our AI reasoning engine."
+
 ### Phase 5: Conclusion (3:45 - 4:00)
-- **Step 10: Closing**: Final view of the dashboard.
+- **Step 11: Closing**: Final view of the dashboard.
   - *Script*: "X-Guardian combined AI autonomy with atomic on-chain execution for the ultimate DeFAI experience. This is the future of secure trading on X Layer. Thank you."

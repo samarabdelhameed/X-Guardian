@@ -12,7 +12,7 @@
 
 ---
 
-![X-Guardian Demo Preview](./perfect_demo_take.webp)
+![X-Guardian Demo Preview](./X_Guardian_Final_Demo.mp4)
 
 ---
 
