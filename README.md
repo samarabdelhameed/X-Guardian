@@ -14,18 +14,33 @@
 
 ## 🚀 Quick Start
 
+### Run the Autonomous Agent (For Hackathon Demo)
+
 ```bash
 # 1. Clone the repository
 git clone https://github.com/samarabdelhameed/X-Guardian.git
 cd X-Guardian
 
-# 2. Install dependencies
+# 2. Run the AI Agent
+cd agent
+pnpm install
+pnpm dev
+
+# The agent will start monitoring and generating transactions!
+```
+
+**📖 Quick Guide**: See [QUICK_START.md](./QUICK_START.md) for detailed instructions
+
+### Run the Frontend
+
+```bash
+# 1. Install dependencies
 cd frontend && pnpm install
 
-# 3. Run the development server
+# 2. Run the development server
 pnpm run dev
 
-# 4. Open your browser
+# 3. Open your browser
 # Visit: http://localhost:3000
 ```
 
@@ -434,11 +449,26 @@ This project demonstrates:
 - ✅ Real on-chain transactions
 - ✅ Production-ready architecture
 
-### Onchain OS Integration
-- ✅ Autonomous AI agent
-- ✅ Market data monitoring
-- ✅ Intelligent decision making
-- ✅ Agentic wallet integration
+### Onchain OS Integration ⭐
+- ✅ **Autonomous AI agent** with TEE-secured Agentic Wallet
+- ✅ **Market API integration** for real-time data
+- ✅ **x402 Protocol (Payments)**: Integrated pay-as-you-go execution fee processing
+- ✅ **Intelligent decision making** with risk assessment
+- ✅ **Continuous monitoring** every 8 seconds
+- ✅ **Legitimate transactions** on X Layer (not simulated)
+
+### Most Popular Award (Engagement Strategy) 📣
+To qualify for the $500 Special Prize, we have implemented an automated strategy for platform engagement:
+- 📢 **Social Proof**: Real-time transaction broadcasting to X and Moltbook.
+- 🚀 **Community Impact**: Public verification of autonomous portfolio protection.
+
+**See Full Integration**: [agent/index.ts](./agent/index.ts) - Complete Onchain OS & x402 implementation
+
+### Hackathon Documentation
+- 📋 **Submission Guide**: [HACKATHON_SUBMISSION.md](./HACKATHON_SUBMISSION.md)
+- 🎬 **Demo Script**: [DEMO_SCRIPT.md](./DEMO_SCRIPT.md)
+- ⚡ **Quick Start**: [QUICK_START.md](./QUICK_START.md)
+- 🏗️ **Architecture**: [ARCHITECTURE.md](./ARCHITECTURE.md)
 
 ### Uniswap Skills
 - ✅ Emergency swap logic (ready for Uniswap v4)

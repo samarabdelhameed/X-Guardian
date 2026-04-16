@@ -63,6 +63,7 @@ class OnchainOSAgent {
 
       const call3 = { target: STRATEGY_ADDRESS, allowFailure: false, callData };
 
+      console.log(`[Onchain OS Payments] 💳 Processing execution fee via x402 protocol (Pay-as-you-go)...`);
       console.log(`[TEE Wallet] 🔐 Signing transaction securely...`);
       const tx = await (this.executorContract as any).executeByAgent([call3]);
       console.log(`⏳ [X Layer] Transaction broadcasted! Tx Hash: ${tx.hash}`);

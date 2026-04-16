@@ -310,10 +310,10 @@ export default function Home() {
         className="text-center z-10 space-y-4 mb-16"
       >
         <h1 className="text-6xl font-black tracking-tighter">
-          Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">Guardian</span>
+          Welcome back, <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500">Alex</span>
         </h1>
         <p className="text-gray-500 font-bold max-w-lg mx-auto text-lg leading-relaxed">
-          Real integration dashboard: wallet, agent checks, and X Layer on-chain status.
+          Premium DeFAI Execution Interface powered by Onchain OS and X Layer.
         </p>
       </motion.div>
 
@@ -329,7 +329,7 @@ export default function Home() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type strategy note, then click arrow to simulate radar..."
+            placeholder="Ask AI Advisor: 'Protect my portfolio on X Layer'..."
             className="flex-1 bg-transparent border-none text-xl font-medium focus:outline-none placeholder:text-white/20 text-white"
            />
            <button
@@ -372,20 +372,20 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
          <FeatureCard
           icon={<Shield className="text-orange-400" />}
-          title="Agent Wallet"
-          desc={short(dashboard.agentWallet)}
+          title="Safe Haven"
+          desc="Automated risk mitigation and asset protection"
           glow="glow-border-gold"
          />
          <FeatureCard
           icon={<Zap className="text-blue-400" />}
-          title="Strategy Owner"
-          desc={short(dashboard.agentOwner)}
+          title="Rapid Swap"
+          desc="Low-latency execution via X Layer Multicall3"
           glow="glow-border-blue"
          />
          <FeatureCard
           icon={<BarChart3 className="text-green-400" />}
-          title="Authorized Executor"
-          desc={short(dashboard.authorizedExecutor)}
+          title="Strategy Audit"
+          desc="TEE-secured autonomous policy verification"
           glow="glow-border-green"
          />
       </div>
