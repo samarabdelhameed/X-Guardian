@@ -8,7 +8,7 @@
 
 **An AI-Powered Autonomous Agent for Real-Time Portfolio Protection on X Layer**
 
-**[🚀 Live Demo on Vercel](https://frontend-hn26gnz9w-samarabdelhameeds-projects-df99c328.vercel.app)** | **[Official GitHub Repository](https://github.com/samarabdelhameed/X-Guardian)**
+**[🎥 Watch Official Demo on YouTube](https://youtu.be/8ziLnVd1jW4)** | **[🚀 Live Demo on Vercel](https://frontend-hn26gnz9w-samarabdelhameeds-projects-df99c328.vercel.app)** | **[Official GitHub Repository](https://github.com/samarabdelhameed/X-Guardian)**
 
 ---
 
