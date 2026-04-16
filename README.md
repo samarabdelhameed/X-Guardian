@@ -8,11 +8,28 @@
 
 **An AI-Powered Autonomous Agent for Real-Time Portfolio Protection on X Layer**
 
-**[🎥 Watch Official Demo on YouTube](https://youtu.be/8ziLnVd1jW4)** | **[🚀 Live Demo on Vercel](https://frontend-hn26gnz9w-samarabdelhameeds-projects-df99c328.vercel.app)** | **[Official GitHub Repository](https://github.com/samarabdelhameed/X-Guardian)**
+**[🎥 Watch Official Demo on YouTube](https://youtu.be/8ziLnVd1jW4)** | **[🚀 Live Demo](http://localhost:3000)** | **[📖 Full Documentation](#documentation)**
 
 ---
 
-![X-Guardian Demo Preview](./X_Guardian_Final_Demo.mp4)
+## 🚀 Quick Start
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/samarabdelhameed/X-Guardian.git
+cd X-Guardian
+
+# 2. Install dependencies
+cd frontend && pnpm install
+
+# 3. Run the development server
+pnpm run dev
+
+# 4. Open your browser
+# Visit: http://localhost:3000
+```
+
+**Live Demo:** The project is currently running at `http://localhost:3000`
 
 ---
 
@@ -261,6 +278,17 @@ foundryup
 # Install Node.js 18+ and pnpm
 npm install -g pnpm
 ```
+
+### 🌐 Demo Pages
+
+The project includes 4 main pages, all accessible at `http://localhost:3000`:
+
+1. **🏠 Dashboard** (`/`) - Main AI advisor with real-time X Layer data
+2. **💰 Invest** (`/invest`) - Investment page with 7 DeFi strategies
+3. **📊 Strategies** (`/strategies`) - Performance analytics with live APY charts
+4. **🎯 Missions** (`/quests`) - Gamification and rewards
+
+**Try it now:** Open [http://localhost:3000/invest](http://localhost:3000/invest) to see the investment interface!
 
 ### 1️⃣ Smart Contracts Setup
 
